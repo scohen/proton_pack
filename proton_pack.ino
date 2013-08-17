@@ -69,7 +69,7 @@ void update_cyclotron(){
 
 void update_powercell(){
   int last_updated = now - cell.last_updated;
-  
+
   if (cell.initializing){
     if (last_updated > 75){
       cell.current_brightness += 10;
@@ -87,14 +87,13 @@ void update_powercell(){
     }
     
   } else {
-    if (last_updated > 60){    
+    if (last_updated > cell.UPDATE_RATE){    
       for (int i=0; i<= cell.num_leds; i++){
         int val = 0;
         if (i < cell.current_led){
-          val = 100;
+          val = cell.MAX_BRIGHTNESS;
         } 
         Tlc.set(i, val);
-  
       }
       cell.current_led = increment_to_max(cell.current_led, cell.num_leds + 1);
       cell.last_updated = millis();
