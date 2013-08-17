@@ -34,8 +34,8 @@ void setup(){
 
 void update_pack(){
   now = millis();
-  update_powercell();
-  //update_cyclotron();
+  //update_powercell();
+  update_cyclotron();
 }
 
 int increment_to_max(int current, int max_value){
@@ -72,7 +72,7 @@ void update_powercell(){
 
   if (cell.initializing){
     if (last_updated > 75){
-      cell.current_brightness += 10;
+      cell.current_brightness += 50;
       for(int i=0; i < cell.num_leds; i++){
         Tlc.set(i, cell.current_brightness);
       }
