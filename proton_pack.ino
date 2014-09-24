@@ -5,18 +5,20 @@ ProtonPack pack(8, 7);
 Cyclotron cyclo(0);
 Powercell cell(16);
 Graph graph(32);
+Nozzle nozzle(48);
+WandLights wand(49);
 
 void setup(){
-  Vector<PackComponent> components;
+  Serial.begin(9600);
   pack.addComponent(&cyclo);
   pack.addComponent(&cell);
   pack.addComponent(&graph);
-  Serial.begin(9600);
+  pack.addComponent(&nozzle);
+  pack.addComponent(&wand);
   pack.initialize();
 }
 
 void loop(){
   pack.update();
-  delay(10);
 }
 
