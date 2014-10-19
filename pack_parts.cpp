@@ -2,7 +2,7 @@
 #include "pack_parts.h"
 
 
-Powercell::Powercell(int offset) : PackComponent(offset) {
+Powercell::Powercell(int offset) : PackComponent(offset, 15) {
 }
 
 void Powercell::onPackInitStart(Pack pack) {
@@ -48,7 +48,6 @@ void Powercell::onUpdate(Pack pack) {
 }
 
 void Powercell::reset(Pack pack) {
-    _last_updated = 0;
     _current_led = 0;
     _initializing = true;
     for(int i=0; i < _num_leds; i++) {
@@ -56,32 +55,30 @@ void Powercell::reset(Pack pack) {
     }
 }
 
-Cyclotron::Cyclotron(int offset) : PackComponent(offset) {
+Cyclotron::Cyclotron(int offset) : PackComponent(offset, 14) {
   _last_switched_at = millis();
 }
 
 void Cyclotron::onUpdate(Pack pack) {
-    static int BRIGHTNESS_INCREMENT = 83;
+    static int BRIGHTNESS_INCREMENT = 80;
     int since_last_switched = pack.now - _last_switched_at;
     if (since_last_switched >= 1000) {
         _current_brightness = 0;
+        setLed(_current_led, _current_brightness);
         _current_led = pp_mod_increment(_current_led, 4);
         _last_switched_at = pack.now;
-    } else if ( since_last_switched < 500 ) {
+    } else if ( since_last_switched <= 500 ) {
         _current_brightness += BRIGHTNESS_INCREMENT;
     } else if (_current_brightness > 0) {
         _current_brightness -= BRIGHTNESS_INCREMENT;
     }
-    for(int i=0; i < 4; i++){
-      setLed(i, 0);
-    }
+    
     setLed(_current_led, _current_brightness);    
     callAgainIn(20);
    
 }
 
 void Cyclotron::reset(Pack pack) {
-    _last_updated = 0;
     _current_led = 0;
     _current_brightness = 0;
     _last_switched_at = pack.now;
@@ -91,7 +88,7 @@ void Cyclotron::reset(Pack pack) {
 }
 
 
-Graph::Graph(int offset) : PackComponent(offset) {
+Graph::Graph(int offset) : PackComponent(offset, 15) {
   _direction = 1;
 }
 
@@ -171,7 +168,6 @@ void Graph::onUpdate(Pack pack) {
 }
 
 void Graph::reset(Pack pack) {
-    _last_updated = 0;
     _iteration = 0;
     _direction = 1;
     _is_initializing = false;
@@ -181,7 +177,7 @@ void Graph::reset(Pack pack) {
     }
 }
 
-Nozzle::Nozzle(int offset) : PackComponent(offset) {
+Nozzle::Nozzle(int offset) : PackComponent(offset, 1) {
 }
 
 void Nozzle::onFiringStart(Pack pack) {
@@ -209,7 +205,7 @@ void Nozzle::reset(Pack pack) {
 }
 
 
-WandLights::WandLights(int offset) : PackComponent(offset) {
+WandLights::WandLights(int offset) : PackComponent(offset, 4) {
 
 }
 
@@ -218,9 +214,9 @@ void WandLights::reset(Pack pack) {
   _is_firing = false;
   _is_initializing = true;
   setLed(SLO_BLO, 0);
-  setLed(TOP_INDICATOR, 4000);
-  setLed(FRONT_LIGHT, 4000);
-  setLed(INTERNAL_LIGHT, 4000);
+  setLed(TOP_INDICATOR, 1000);
+  setLed(FRONT_LIGHT, 1000);
+  setLed(INTERNAL_LIGHT, 4095);
 }
 
 void WandLights::onFiringStart(Pack pack) {
@@ -242,21 +238,55 @@ void WandLights::onPackInitComplete(Pack pack){
 
 void WandLights::onUpdate(Pack pack) {
   if (_is_initializing) {
-    setLed(0, 0);
-    callAgainIn(200);
- 
+    setLed(SLO_BLO, 0);
+    callAgainIn(200); 
   } else {
-    
     if (_is_on) {
-      setLed(0, 0);
+      setLed(SLO_BLO, 0);
     } else {
-      setLed(0, 4095);
+      setLed(SLO_BLO, 400);
     }
     _is_on = !_is_on;
     if (_is_firing) {
-      callAgainIn(100);
+      callAgainIn(500);
+    } else if (_is_on) {
+      callAgainIn(2500);
     } else {
-      callAgainIn(1500);
+      callAgainIn(250);
     }
   }
 }
+
+Sound::Sound(): PackListener() {
+  pinMode(POWER_RELAY, OUTPUT);
+  pinMode(FIRING_START_RELAY, OUTPUT);
+  pinMode(FIRING_STOP_RELAY, OUTPUT);
+    digitalWrite(POWER_RELAY, HIGH);
+  digitalWrite(FIRING_START_RELAY, HIGH);
+  digitalWrite(FIRING_STOP_RELAY, HIGH);
+}
+
+void Sound::reset(Pack pack) {
+  digitalWrite(POWER_RELAY, HIGH);
+  digitalWrite(FIRING_START_RELAY, HIGH);
+  digitalWrite(FIRING_STOP_RELAY, HIGH);
+}
+
+void Sound::onFiringStart(Pack pack) {
+  digitalWrite(FIRING_START_RELAY, LOW);
+  digitalWrite(FIRING_STOP_RELAY, HIGH);
+}
+ 
+void Sound::onFiringStop(Pack pack) {
+  digitalWrite(FIRING_START_RELAY, HIGH);
+  digitalWrite(FIRING_STOP_RELAY, LOW);
+}
+  
+void Sound::onPackInitStart(Pack pack) {
+  digitalWrite(POWER_RELAY, LOW);
+}
+
+void Sound::onPackInitComplete(Pack pack) {
+  
+}
+

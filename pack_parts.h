@@ -13,7 +13,6 @@ public:
     void reset(Pack pack);
 
 protected:
-    const static int _num_leds = 14;
     const static int _MAX_BRIGHTNESS = 2000;
     int _current_led;
     bool _initializing;
@@ -40,7 +39,6 @@ class Graph: public PackComponent {
     void onFiringStop(Pack pack);
     
   protected:
-    const static int _num_leds = 15;
     int _iteration;
     int _direction;
     int _fill_pos;
@@ -80,5 +78,21 @@ protected:
   bool _is_firing;
   
 };
+
+class Sound: public PackListener {
+public:
+  Sound();
+  void onFiringStart(Pack pack);
+  void onFiringStop(Pack pack);
+  void onPackInitStart(Pack pack);
+  void onPackInitComplete(Pack pack);
+  void reset(Pack pack);
+protected:
+  const static int POWER_RELAY = 4;
+  const static int FIRING_START_RELAY = 5;
+  const static int FIRING_STOP_RELAY = 6;
+  
+};
+
 
 #endif
