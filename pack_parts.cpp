@@ -287,6 +287,6 @@ void Sound::onPackInitStart(Pack pack) {
 }
 
 void Sound::onPackInitComplete(Pack pack) {
-  
+  digitalWrite(POWER_RELAY, HIGH);
 }
-
+*
